@@ -187,6 +187,7 @@
         <img id="home-photo" onclick="triggerPhoto()" alt="Malbec">
         <button id="photo-edit-fab" onclick="triggerPhoto()">✏️</button>
         <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)">
+        <input type="file" id="import-input" accept=".json" style="display:none">
       </div>
 
       <div id="name-edit-wrap">
@@ -341,6 +342,7 @@ function confirmCancel(){
 document.getElementById("confirm-ok-btn").addEventListener("click", confirmOk);
 document.getElementById("confirm-cancel-btn").addEventListener("click", confirmCancel);
 document.getElementById("confirm-overlay").addEventListener("click", function(e){ if(e.target===this) confirmCancel(); });
+document.getElementById("import-input").addEventListener("change", importarDatos);
 
 // ── DATOS ────────────────────────────────────────────────────────
 const DIAS_FULL=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
@@ -666,8 +668,7 @@ function renderMasMenu(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <button onclick="exportarDatos()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">⬇️ Exportar</button>
       <button onclick="document.getElementById('import-input').click()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">⬆️ Importar</button>
-    </div>
-    <input type="file" id="import-input" accept=".json" style="display:none" onchange="importarDatos(event)">`;
+    </div>`;
   sec.appendChild(div);
 }
 
@@ -1129,32 +1130,29 @@ function exportarDatos(){
 }
 
 function importarDatos(e){
-  const file=e.target.files[0];
+  const file=(e.target||e).files[0];
   if(!file)return;
+  const input=document.getElementById("import-input");
   const reader=new FileReader();
   reader.onload=ev=>{
     try{
       const backup=JSON.parse(ev.target.result);
       if(!backup._version)throw new Error("Archivo inválido");
-      // vet_dogname is stored as a raw string (not JSON-encoded string)
       const nombre=backup.vet_dogname||"Malbec";
       askConfirm(`¿Restaurar los datos de ${nombre}? Se reemplaza todo lo actual.`,()=>{
-        // Write all vet_ keys to localStorage
         Object.keys(backup).forEach(k=>{
           if(k.startsWith("vet_")) localStorage.setItem(k, backup[k]);
         });
-        // Reset input AFTER everything is saved
-        e.target.value="";
-        // Force full page reload so everything re-initializes cleanly
+        input.value="";
         window.location.reload();
       }, "Restaurar", "#2a9d8f");
     }catch(err){
-      e.target.value="";
+      input.value="";
       alert("El archivo no es válido. Asegurate de importar un backup generado por esta app.");
     }
   };
   reader.onerror=()=>{
-    e.target.value="";
+    input.value="";
     alert("No se pudo leer el archivo. Intentá de nuevo.");
   };
   reader.readAsText(file);

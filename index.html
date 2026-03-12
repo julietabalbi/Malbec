@@ -666,6 +666,7 @@ function renderMasMenu(){
   div.innerHTML=`
     <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#bbb;margin-bottom:10px">Datos</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button onclick="diagnosticarStorage()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff8e1;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">🔍 Diagnóstico</button>
       <button onclick="exportarDatos()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">⬇️ Exportar</button>
       <label for="import-input" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin:0">⬆️ Importar</label>
     </div>`;
@@ -1109,6 +1110,29 @@ function submitCons(){
 }
 
 // ── EXPORTAR / IMPORTAR ──────────────────────────────────────────
+function diagnosticarStorage(){
+  const keys=["vet_dogname","vet_raza","vet_cumple","vet_vacunas","vet_visitas",
+    "vet_desparasitaciones","vet_medicamentos","vet_operaciones",
+    "vet_suplementos","vet_consultas_nut","vet_dieta_base"];
+  let msg="📦 localStorage:\n";
+  keys.forEach(k=>{
+    const v=localStorage.getItem(k);
+    if(!v) msg+=`❌ ${k}: vacío\n`;
+    else {
+      try{
+        const arr=JSON.parse(v);
+        if(Array.isArray(arr)) msg+=`✅ ${k}: ${arr.length} items\n`;
+        else msg+=`✅ ${k}: "${String(v).substring(0,30)}"\n`;
+      }catch{ msg+=`✅ ${k}: "${String(v).substring(0,30)}"\n`; }
+    }
+  });
+  msg+="\n📝 En memoria:\n";
+  msg+=`suplementos: ${(data.suplementos||[]).length}\n`;
+  msg+=`consultas_nut: ${(data.consultas_nut||[]).length}\n`;
+  msg+=`dietaBase: ${(dietaBase||[]).length}\n`;
+  alert(msg);
+}
+
 function exportarDatos(){
   const keys=["vet_dogname","vet_raza","vet_cumple","vet_photo",
     "vet_vacunas","vet_visitas","vet_desparasitaciones","vet_medicamentos",
@@ -1131,35 +1155,51 @@ function exportarDatos(){
 
 function importarDatos(e){
   const file=(e.target||e).files[0];
-  if(!file){ alert("No se seleccionó archivo"); return; }
-  alert("Archivo seleccionado: " + file.name + " (" + file.size + " bytes)");
+  if(!file)return;
   const input=document.getElementById("import-input");
   const reader=new FileReader();
   reader.onload=ev=>{
-    alert("Archivo leído OK, largo: " + ev.target.result.length);
     try{
       const backup=JSON.parse(ev.target.result);
-      alert("JSON parseado OK, keys: " + Object.keys(backup).join(", "));
       if(!backup._version)throw new Error("Sin _version");
       const nombre=backup.vet_dogname||"Malbec";
-      askConfirm(`¿Restaurar los datos de ${nombre}? Se reemplaza todo lo actual.`,()=>{
-        alert("Callback ejecutado, guardando...");
+      askConfirm(`¿Restaurar los datos de ${nombre}?`,()=>{
+        // Save everything to localStorage
         Object.keys(backup).forEach(k=>{
-          if(k.startsWith("vet_")) localStorage.setItem(k, backup[k]);
+          if(k.startsWith("vet_")){
+            try{ localStorage.setItem(k, backup[k]); }catch(err){}
+          }
         });
-        alert("Guardado OK, recargando...");
+        // Reinitialize all data from localStorage directly
+        ["vacunas","visitas","desparasitaciones","medicamentos","operaciones"].forEach(s=>{
+          try{data[s]=JSON.parse(localStorage.getItem("vet_"+s)||"[]");}catch{data[s]=[];}
+        });
+        try{data.suplementos=JSON.parse(localStorage.getItem("vet_suplementos")||"[]");}catch{data.suplementos=[];}
+        try{data.consultas_nut=JSON.parse(localStorage.getItem("vet_consultas_nut")||"[]");}catch{data.consultas_nut=[];}
+        try{dietaBase=JSON.parse(localStorage.getItem("vet_dieta_base")||"[]");}catch{dietaBase=[];}
+        // Update UI
+        const n=localStorage.getItem("vet_dogname");
+        if(n) document.getElementById("hero-name-label").textContent=n;
+        const photo=localStorage.getItem("vet_photo");
+        if(photo) applyPhoto(photo);
+        updateHeroChips();
+        // Reset form states
+        ["vacunas","visitas","desparasitaciones","medicamentos","operaciones"].forEach(s=>{
+          formState[s]={showForm:false,editIndex:null};
+        });
+        formState.nutricion={nutriTab:"dia",showForm:false,editIndex:null,showSupForm:false,supEditIdx:null,showConsForm:false,consEditIdx:null};
         input.value="";
-        window.location.reload();
+        renderHome();
+        renderMasMenu();
+        goTo("home");
+        alert("✅ Datos restaurados correctamente");
       }, "Restaurar", "#2a9d8f");
     }catch(err){
       input.value="";
-      alert("Error parseando: " + err.message);
+      alert("Error: " + err.message);
     }
   };
-  reader.onerror=()=>{
-    input.value="";
-    alert("Error leyendo archivo: " + reader.error);
-  };
+  reader.onerror=()=>{ input.value=""; alert("No se pudo leer el archivo."); };
   reader.readAsText(file);
 }
 

@@ -1136,20 +1136,28 @@ function importarDatos(e){
     try{
       const backup=JSON.parse(ev.target.result);
       if(!backup._version)throw new Error("Archivo inválido");
-      const nombre=JSON.parse(backup.vet_dogname||'"Malbec"');
-      askConfirm(`¿Restaurar todos los datos de ${nombre}? Esto reemplaza lo que hay ahora.`,()=>{
+      // vet_dogname is stored as a raw string (not JSON-encoded string)
+      const nombre=backup.vet_dogname||"Malbec";
+      askConfirm(`¿Restaurar los datos de ${nombre}? Se reemplaza todo lo actual.`,()=>{
+        // Write all vet_ keys to localStorage
         Object.keys(backup).forEach(k=>{
-          if(k.startsWith("vet_"))localStorage.setItem(k,backup[k]);
+          if(k.startsWith("vet_")) localStorage.setItem(k, backup[k]);
         });
-        loadData();
-        goTo("home");
+        // Reset input AFTER everything is saved
+        e.target.value="";
+        // Force full page reload so everything re-initializes cleanly
+        window.location.reload();
       }, "Restaurar", "#2a9d8f");
     }catch(err){
+      e.target.value="";
       alert("El archivo no es válido. Asegurate de importar un backup generado por esta app.");
     }
   };
+  reader.onerror=()=>{
+    e.target.value="";
+    alert("No se pudo leer el archivo. Intentá de nuevo.");
+  };
   reader.readAsText(file);
-  e.target.value=""; // reset input
 }
 
 // ── TARJETA DE CUIDADO ───────────────────────────────────────────

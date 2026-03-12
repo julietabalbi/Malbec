@@ -1131,29 +1131,34 @@ function exportarDatos(){
 
 function importarDatos(e){
   const file=(e.target||e).files[0];
-  if(!file)return;
+  if(!file){ alert("No se seleccionó archivo"); return; }
+  alert("Archivo seleccionado: " + file.name + " (" + file.size + " bytes)");
   const input=document.getElementById("import-input");
   const reader=new FileReader();
   reader.onload=ev=>{
+    alert("Archivo leído OK, largo: " + ev.target.result.length);
     try{
       const backup=JSON.parse(ev.target.result);
-      if(!backup._version)throw new Error("Archivo inválido");
+      alert("JSON parseado OK, keys: " + Object.keys(backup).join(", "));
+      if(!backup._version)throw new Error("Sin _version");
       const nombre=backup.vet_dogname||"Malbec";
       askConfirm(`¿Restaurar los datos de ${nombre}? Se reemplaza todo lo actual.`,()=>{
+        alert("Callback ejecutado, guardando...");
         Object.keys(backup).forEach(k=>{
           if(k.startsWith("vet_")) localStorage.setItem(k, backup[k]);
         });
+        alert("Guardado OK, recargando...");
         input.value="";
         window.location.reload();
       }, "Restaurar", "#2a9d8f");
     }catch(err){
       input.value="";
-      alert("El archivo no es válido. Asegurate de importar un backup generado por esta app.");
+      alert("Error parseando: " + err.message);
     }
   };
   reader.onerror=()=>{
     input.value="";
-    alert("No se pudo leer el archivo. Intentá de nuevo.");
+    alert("Error leyendo archivo: " + reader.error);
   };
   reader.readAsText(file);
 }

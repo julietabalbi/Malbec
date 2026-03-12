@@ -187,7 +187,7 @@
         <img id="home-photo" onclick="triggerPhoto()" alt="Malbec">
         <button id="photo-edit-fab" onclick="triggerPhoto()">✏️</button>
         <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)">
-        <input type="file" id="import-input" accept=".json" style="display:none">
+        <input type="file" id="import-input" accept=".json" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none">
       </div>
 
       <div id="name-edit-wrap">
@@ -667,7 +667,7 @@ function renderMasMenu(){
     <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#bbb;margin-bottom:10px">Datos</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <button onclick="exportarDatos()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">⬇️ Exportar</button>
-      <button onclick="document.getElementById('import-input').click()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">⬆️ Importar</button>
+      <label for="import-input" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin:0">⬆️ Importar</label>
     </div>`;
   sec.appendChild(div);
 }

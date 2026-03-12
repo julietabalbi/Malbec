@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<title>🌭 Malbec</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme:light only; --accent:#2a9d8f; }
+  * { box-sizing:border-box; margin:0; padding:0; font-family:'Nunito',sans-serif; }
+  html,body { background:#fff !important; color:#1a1a1a; min-height:100vh; max-width:600px; margin:0 auto; }
+
+  /* ── BOTTOM NAV ── */
+  #bottom-nav {
+    position:fixed; bottom:0; left:0; right:0;
+    background:#fff; border-top:1px solid #eee;
+    display:flex; z-index:200;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  #bottom-nav button {
+    flex:1; border:none; background:transparent; padding:10px 4px 8px;
+    cursor:pointer; font-size:10px; font-weight:700; color:#bbb;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  #bottom-nav button .nav-icon { font-size:22px; }
+  #bottom-nav button.active { color:var(--accent); }
+
+  /* ── PAGE ── */
+  #app { padding-bottom:70px; }
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    padding:18px 16px 14px;
+    border-bottom:1px solid #f0f0f0;
+    position:sticky; top:0; background:#fff; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .top-bar h1 { font-size:20px; font-weight:800; letter-spacing:-0.4px; }
+  .top-bar .top-count { font-size:12px; color:#aaa; font-weight:600; }
+
+  /* FAB */
+  .fab { position:fixed; bottom:80px; right:20px; width:52px; height:52px; border-radius:50%; border:none; color:#fff; font-size:28px; font-weight:300; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.18); z-index:150; display:none; align-items:center; justify-content:center; line-height:1; transition:transform 0.15s; }
+  .fab:active { transform:scale(0.92); }
+  .fab.visible { display:flex; }
+
+  /* ── HOME ── */
+  #home { padding:0; }
+  .home-hero {
+    padding:28px 16px 22px;
+    display:flex; flex-direction:column; align-items:center; gap:0;
+    border-bottom:1px solid #f0f0f0;
+    position:relative; overflow:hidden;
+    background-color:#fdf6ee;
+    /* Dachshund SVG pattern background */
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ctext x='4' y='28' font-size='22' opacity='0.13'%3E%F0%9F%8C%AD%3C/text%3E%3Ctext x='42' y='60' font-size='22' opacity='0.13'%3E%F0%9F%8C%AD%3C/text%3E%3Ctext x='54' y='22' font-size='16' opacity='0.09'%3E%F0%9F%90%BE%3C/text%3E%3Ctext x='10' y='68' font-size='16' opacity='0.09'%3E%F0%9F%90%BE%3C/text%3E%3C/svg%3E");
+  }
+  #home-photo-wrap { position:relative; margin-bottom:14px; }
+  #home-photo { width:100px; height:100px; border-radius:50%; object-fit:cover; border:4px solid #fff; box-shadow:0 4px 16px rgba(0,0,0,0.12); cursor:pointer; display:none; }
+  #home-photo-ph { width:100px; height:100px; border-radius:50%; background:#fff; border:3px dashed #ddd; display:flex; align-items:center; justify-content:center; font-size:36px; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+  #photo-edit-fab { position:absolute; bottom:2px; right:2px; background:#e9c46a; border:none; border-radius:50%; width:26px; height:26px; font-size:12px; cursor:pointer; color:#264653; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+  #photo-input { display:none; }
+  .hero-name { font-size:24px; font-weight:800; letter-spacing:-0.5px; cursor:pointer; text-align:center; color:#1a1a1a; }
+  .hero-name-edit-icon { font-size:13px; color:#ccc; }
+  .hero-chips { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+  .hero-chip { background:rgba(255,255,255,0.85); border:1px solid #e8e8e8; border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; color:#555; cursor:pointer; }
+  .hero-chip.add { border-style:dashed; color:#aaa; }
+  #name-edit-wrap { display:none; align-items:center; gap:8px; margin-bottom:6px; }
+  #name-input { font-size:18px; font-weight:700; border:none; border-bottom:2px solid #ddd; outline:none; width:150px; text-align:center; background:transparent; }
+  #name-save-btn { background:#fff; border:1px solid #ddd; border-radius:6px; padding:4px 10px; cursor:pointer; font-size:13px; font-weight:700; }
+  .hero-sub { font-size:12px; color:#888; margin-top:6px; font-weight:500; text-align:center; }
+
+  /* cards */
+  .home-section { padding:16px 16px 0; }
+  .home-section-title { font-size:13px; font-weight:800; color:#444; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }
+  .card { background:#fff; border:1px solid #eee; border-radius:14px; padding:14px; margin-bottom:10px; }
+  .card-accent { border-left:4px solid var(--card-color,#2a9d8f); }
+
+  /* dieta del día */
+  .day-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .day-header .day-label { font-size:15px; font-weight:800; }
+  .day-header .day-nav { display:flex; gap:6px; }
+  .day-nav-btn { background:#f5f5f5; border:none; border-radius:8px; width:28px; height:28px; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:800; color:#555; }
+  .diet-item { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid #f5f5f5; }
+  .diet-item:last-child { border-bottom:none; }
+  .diet-emoji { font-size:18px; width:24px; text-align:center; }
+  .diet-name { font-size:13.5px; font-weight:700; flex:1; }
+  .diet-qty { font-size:12px; color:#888; font-weight:500; }
+  .diet-tag { font-size:10px; font-weight:800; padding:2px 7px; border-radius:20px; }
+  .diet-tag.food { background:#fff3e0; color:#e8a838; }
+  .diet-tag.sup { background:#f3eeff; color:#9b5de5; }
+  .no-diet { font-size:13px; color:#aaa; font-weight:500; text-align:center; padding:10px 0; }
+
+  /* próximas */
+  .upcoming-card { border-radius:14px; padding:14px; margin-bottom:10px; border:1px solid #eee; display:flex; align-items:center; gap:12px; cursor:pointer; }
+  .upcoming-icon { font-size:28px; flex-shrink:0; }
+  .upcoming-info { flex:1; min-width:0; }
+  .upcoming-title { font-size:14px; font-weight:800; }
+  .upcoming-sub { font-size:12px; color:#777; margin-top:2px; font-weight:500; }
+  .upcoming-date { font-size:12px; font-weight:800; padding:4px 10px; border-radius:20px; flex-shrink:0; white-space:nowrap; text-align:center; line-height:1.4; }
+  .urg-urgent { background:#ffe8e8; color:#c0392b; border:1px solid #f5c6c6; }
+  .urg-soon   { background:#fff3e0; color:#e08000; border:1px solid #fde0a0; }
+  .urg-ok     { background:#f0faf8; color:#2a9d8f; border:1px solid #b8e8e2; }
+  .no-upcoming { font-size:13px; color:#aaa; font-weight:500; text-align:center; padding:10px 0; }
+
+  /* ── SECCIONES ── */
+  .sec-content { padding:16px; }
+  .sec-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .sec-header h2 { font-size:20px; font-weight:800; }
+  .sec-header small { display:block; font-size:12px; color:#777; margin-top:2px; }
+  .btn-add { color:#fff; border:none; border-radius:10px; padding:9px 15px; cursor:pointer; font-size:13px; font-weight:800; }
+
+  /* form */
+  .form-box { border-radius:14px; padding:16px; margin-bottom:16px; border:1.5px solid #eee; }
+  .form-box h3 { font-size:15px; font-weight:800; margin-bottom:14px; }
+  .field { margin-bottom:12px; }
+  .field label { display:block; font-size:10.5px; color:#555; margin-bottom:4px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; }
+  .field input,.field textarea,.field select { display:block; width:100%; max-width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e0e0e0; font-size:14px; font-weight:500; background:#fff; color:#1a1a1a; outline:none; -webkit-appearance:none; }
+  .field input:focus,.field textarea:focus,.field select:focus { border-color:var(--accent); }
+  .field textarea { resize:vertical; line-height:1.5; min-height:70px; }
+  .field select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
+  .dias-grid { display:flex; gap:6px; flex-wrap:wrap; }
+  .dia-btn { padding:6px 9px; border-radius:8px; border:1.5px solid #ddd; background:#fff; font-size:12px; font-weight:700; cursor:pointer; color:#555; }
+  .dia-btn.sel { color:#fff; border-color:transparent; }
+  .form-actions { display:flex; gap:8px; margin-top:14px; }
+  .btn-save { flex:1; color:#fff; border:none; border-radius:9px; padding:12px; cursor:pointer; font-size:14px; font-weight:800; }
+  .btn-cancel { background:#f4f4f4; color:#666; border:none; border-radius:9px; padding:12px 16px; cursor:pointer; font-size:14px; font-weight:600; }
+
+  /* record */
+  .record { border-radius:14px; padding:14px; margin-bottom:10px; border:1px solid #eee; }
+  .record.alert-rec { border-color:#f0d060; }
+  .alert-tag { display:inline-block; border-radius:20px; padding:3px 11px; font-size:10.5px; font-weight:800; margin-bottom:10px; background:#fff9e0; color:#a07800; }
+  .rec-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:8px; }
+  .rf-label { font-size:9.5px; color:#666; text-transform:uppercase; letter-spacing:0.6px; font-weight:700; margin-bottom:1px; }
+  .rf-val { font-size:13.5px; color:#222; font-weight:500; line-height:1.3; }
+  .rf-val.bold { font-weight:700; }
+  .rf-full { grid-column:1/-1; }
+  .rec-note { padding:8px 11px; border-radius:9px; margin-bottom:8px; background:#fafafa; }
+  .rec-note p { font-size:13px; color:#444; line-height:1.55; margin-top:3px; }
+  .rec-actions { display:flex; gap:7px; margin-top:10px; }
+  .btn-edit,.btn-del { flex:1; border:none; border-radius:8px; padding:8px; cursor:pointer; font-size:12.5px; font-weight:700; }
+  .btn-del { background:#fff0f0; color:#e63946; }
+  .dias-chips { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
+  .dia-chip { padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:700; color:#fff; }
+
+  /* empty */
+  .empty { text-align:center; padding:40px 16px; }
+  .empty .icon { font-size:42px; margin-bottom:10px; }
+  .empty p { font-size:15px; font-weight:700; color:#888; }
+  .empty p.sub { font-size:12px; margin-top:5px; color:#bbb; font-weight:500; }
+
+  /* nutrición sub-tabs */
+  .sub-tabs { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; -webkit-overflow-scrolling:touch; }
+  .sub-tab { flex-shrink:0; padding:8px 12px; border:none; border-radius:9px; cursor:pointer; font-size:12.5px; font-weight:700; background:#f0f0f0; color:#555; }
+  .sub-tab.active { color:#fff; }
+
+  /* ing row */
+  .ing-row { display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:11px; margin-bottom:8px; border:1px solid #eee; }
+  .ing-emoji { font-size:20px; width:26px; text-align:center; flex-shrink:0; }
+  .ing-info { flex:1; min-width:0; }
+  .ing-nombre { font-size:14px; font-weight:700; }
+  .ing-sub { font-size:11.5px; color:#777; margin-top:1px; }
+  .ing-actions { display:flex; gap:5px; flex-shrink:0; }
+  .ing-btn { border:none; border-radius:7px; padding:5px 9px; cursor:pointer; font-size:12px; font-weight:700; }
+
+  /* ── CONFIRM DIALOG ── */
+  #confirm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:999; align-items:flex-end; justify-content:center; }
+  #confirm-overlay.show { display:flex; }
+  #confirm-box { background:#fff; border-radius:20px 20px 0 0; padding:24px 20px 32px; width:100%; max-width:600px; }
+  #confirm-msg { font-size:16px; font-weight:700; margin-bottom:18px; text-align:center; color:#1a1a1a; }
+  #confirm-btns { display:flex; gap:10px; }
+  #confirm-cancel-btn { flex:1; background:#f0f0f0; color:#555; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:700; cursor:pointer; }
+  #confirm-ok-btn { flex:1; background:#e63946; color:#fff; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:800; cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HOME ─────────────────────────────────────────────── -->
+  <div class="page active" id="page-home">
+
+    <div class="home-hero">
+      <div id="home-photo-wrap">
+        <div id="home-photo-ph" onclick="triggerPhoto()">🐾</div>
+        <img id="home-photo" onclick="triggerPhoto()" alt="Malbec">
+        <button id="photo-edit-fab" onclick="triggerPhoto()">✏️</button>
+        <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)">
+      </div>
+
+      <div id="name-edit-wrap">
+        <input id="name-input" type="text" onkeydown="if(event.key==='Enter')saveName()" placeholder="Nombre...">
+        <button id="name-save-btn" onclick="saveName()">✓</button>
+      </div>
+      <div id="name-display-wrap">
+        <div class="hero-name" onclick="startEditName()">
+          <span id="hero-name-label">Malbec</span> <span class="hero-name-edit-icon">✏️</span>
+        </div>
+      </div>
+
+      <div class="hero-chips">
+        <div class="hero-chip" onclick="editHeroField('raza','Raza')" id="chip-raza">🐕 Cargando...</div>
+        <div class="hero-chip" onclick="editHeroField('cumple','Cumpleaños')" id="chip-cumple">🎂 Cargando...</div>
+      </div>
+      <div class="hero-sub" id="hero-date-sub"></div>
+    </div>
+
+    <!-- Dieta del día -->
+    <div class="home-section">
+      <div class="home-section-title">🍽️ Dieta de hoy</div>
+      <div class="card">
+        <div class="day-header">
+          <div class="day-label" id="home-day-label">Lunes</div>
+          <div class="day-nav">
+            <button class="day-nav-btn" onclick="homePrevDay()">‹</button>
+            <button class="day-nav-btn" onclick="homeNextDay()">›</button>
+          </div>
+        </div>
+        <div id="home-diet-list"></div>
+      </div>
+    </div>
+
+    <!-- Próximas citas -->
+    <div class="home-section" style="padding-bottom:16px">
+      <div class="home-section-title">📅 Próximas citas y vencimientos</div>
+      <div id="home-upcoming"></div>
+    </div>
+
+  </div><!-- /home -->
+
+  <!-- ── VACUNAS ───────────────────────────────────────────── -->
+  <div class="page" id="page-vacunas">
+    <div class="top-bar"><div><h1>💉 Vacunas</h1></div><span class="top-count" id="count-vacunas"></span></div>
+    <div class="sec-content" id="content-vacunas"></div>
+  </div>
+
+  <!-- ── VISITAS ───────────────────────────────────────────── -->
+  <div class="page" id="page-visitas">
+    <div class="top-bar"><div><h1>🏥 Visitas al Vet</h1></div><span class="top-count" id="count-visitas"></span></div>
+    <div class="sec-content" id="content-visitas"></div>
+  </div>
+
+  <!-- ── DESPARASIT ─────────────────────────────────────────── -->
+  <div class="page" id="page-desparasitaciones">
+    <div class="top-bar"><div><h1>🛡️ Desparasitaciones</h1></div><span class="top-count" id="count-desparasitaciones"></span></div>
+    <div class="sec-content" id="content-desparasitaciones"></div>
+  </div>
+
+  <!-- ── MEDICAMENTOS ───────────────────────────────────────── -->
+  <div class="page" id="page-medicamentos">
+    <div class="top-bar"><div><h1>💊 Medicamentos</h1></div><span class="top-count" id="count-medicamentos"></span></div>
+    <div class="sec-content" id="content-medicamentos"></div>
+  </div>
+
+  <!-- ── OPERACIONES ────────────────────────────────────────── -->
+  <div class="page" id="page-operaciones">
+    <div class="top-bar"><div><h1>🩺 Operaciones</h1></div><span class="top-count" id="count-operaciones"></span></div>
+    <div class="sec-content" id="content-operaciones"></div>
+  </div>
+
+  <!-- ── NUTRICIÓN ──────────────────────────────────────────── -->
+  <div class="page" id="page-nutricion">
+    <div class="top-bar"><div><h1>🥗 Nutrición</h1></div></div>
+    <div class="sec-content" id="content-nutricion"></div>
+  </div>
+
+  <!-- ── MÁS (menú) ─────────────────────────────────────────── -->
+  <div class="page" id="page-mas">
+    <div class="top-bar"><div><h1>Más secciones</h1></div></div>
+    <div class="sec-content">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${['vacunas','visitas','desparasitaciones','medicamentos','operaciones','nutricion'].map(s=>``).join('')}
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- FAB -->
+<button id="fab" class="fab" onclick="fabAction()">+</button>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav">
+  <button onclick="goTo('home')" id="nav-home" class="active">
+    <span class="nav-icon">🏠</span>Inicio
+  </button>
+  <button onclick="goTo('nutricion')" id="nav-nutricion">
+    <span class="nav-icon">🥗</span>Nutrición
+  </button>
+  <button onclick="goTo('vacunas')" id="nav-vacunas">
+    <span class="nav-icon">💉</span>Vacunas
+  </button>
+  <button onclick="goTo('visitas')" id="nav-visitas">
+    <span class="nav-icon">🏥</span>Visitas
+  </button>
+  <button onclick="goTo('mas')" id="nav-mas">
+    <span class="nav-icon">☰</span>Más
+  </button>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div id="confirm-msg">¿Eliminar este registro?</div>
+    <div id="confirm-btns">
+      <button id="confirm-cancel-btn" onclick="confirmCancel()">Cancelar</button>
+      <button id="confirm-ok-btn" onclick="confirmOk()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CUSTOM CONFIRM ───────────────────────────────────────────────
+let _confirmCallback=null;
+function askConfirm(msg, cb){
+  document.getElementById("confirm-msg").textContent=msg;
+  document.getElementById("confirm-overlay").classList.add("show");
+  _confirmCallback=cb;
+}
+function confirmOk(){ document.getElementById("confirm-overlay").classList.remove("show"); if(_confirmCallback)_confirmCallback(); _confirmCallback=null; }
+function confirmCancel(){ document.getElementById("confirm-overlay").classList.remove("show"); _confirmCallback=null; }
+
+// ── DATOS ────────────────────────────────────────────────────────
+const DIAS_FULL=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const DIAS_SHORT=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+
+const CFG={
+  vacunas:  {label:"Vacunas",  icon:"💉", accent:"#2a9d8f",
+    fields:[{k:"tipo",l:"Tipo de vacuna",t:"text"},{k:"fecha",l:"Fecha aplicada",t:"date"},{k:"proxima",l:"Próxima dosis",t:"date"},{k:"veterinario",l:"Veterinario",t:"text"},{k:"notas",l:"Notas",t:"textarea"}]},
+  visitas:  {label:"Visitas",  icon:"🏥", accent:"#e76f51",
+    fields:[{k:"fecha",l:"Fecha de visita",t:"date"},{k:"motivo",l:"Motivo",t:"text"},{k:"veterinario",l:"Veterinario / Clínica",t:"text"},{k:"diagnostico",l:"Diagnóstico",t:"textarea"},{k:"proximo",l:"Próxima cita",t:"date"},{k:"notas",l:"Notas",t:"textarea"}]},
+  desparasitaciones:{label:"Desparasit.",icon:"🛡️",accent:"#57a773",
+    fields:[{k:"tipo",l:"Tipo",t:"text"},{k:"producto",l:"Producto",t:"text"},{k:"fecha",l:"Fecha aplicada",t:"date"},{k:"proxima",l:"Próxima aplicación",t:"date"},{k:"notas",l:"Notas",t:"textarea"}]},
+  medicamentos:{label:"Medicamentos",icon:"💊",accent:"#9b5de5",
+    fields:[{k:"nombre",l:"Medicamento",t:"text"},{k:"dosis",l:"Dosis",t:"text"},{k:"frecuencia",l:"Frecuencia",t:"text"},{k:"inicio",l:"Fecha inicio",t:"date"},{k:"fin",l:"Fecha fin",t:"date"},{k:"motivo",l:"Motivo",t:"text"},{k:"notas",l:"Notas",t:"textarea"}]},
+  operaciones:{label:"Operaciones",icon:"🩺",accent:"#e63946",
+    fields:[{k:"tipo",l:"Tipo",t:"text"},{k:"fecha",l:"Fecha",t:"date"},{k:"veterinario",l:"Veterinario / Clínica",t:"text"},{k:"descripcion",l:"Descripción",t:"textarea"},{k:"recuperacion",l:"Recuperación",t:"text"},{k:"seguimiento",l:"Fecha seguimiento",t:"date"},{k:"notas",l:"Notas",t:"textarea"}]},
+  nutricion:{label:"Nutrición",icon:"🥗",accent:"#e8a838",fields:[]}
+};
+
+let data={}, dietaBase=[], selectedDias=[];
+let formState={}; // {sec, showForm, editIndex, showSupForm, supEditIdx, showConsForm, consEditIdx, nutriTab}
+let activePage="home";
+let homeDayIdx = new Date().getDay()===0?6:new Date().getDay()-1;
+
+const emap={"pollo":"🍗","carne":"🥩","res":"🥩","cerdo":"🐷","pescado":"🐟","zanahoria":"🥕","zapallo":"🎃","calabaza":"🎃","arroz":"🍚","papa":"🥔","batata":"🍠","boniato":"🍠","brocoli":"🥦","brócoli":"🥦","espinaca":"🌿","acelga":"🌿","huevo":"🥚","aceite":"🫒","higado":"🫀","hígado":"🫀"};
+const getEmoji=n=>{const k=Object.keys(emap).find(e=>n.toLowerCase().includes(e));return k?emap[k]:"🥘";};
+
+function isUpcoming(d){if(!d)return false;const diff=(new Date(d)-new Date())/86400000;return diff>=0;}
+function isSoon(d){if(!d)return false;const diff=(new Date(d)-new Date())/86400000;return diff>=0&&diff<=30;}
+function fmtDate(d){if(!d)return"—";const[y,m,dd]=d.split("-");return`${dd}/${m}/${y}`;}
+function daysUntil(d){if(!d)return null;return Math.ceil((new Date(d)-new Date())/86400000);}
+function urgency(days){ if(days<=7)return"urgent"; if(days<=30)return"soon"; return"ok"; }
+
+function getNextDate(rec,sec){
+  return sec==="vacunas"?rec.proxima:sec==="visitas"?rec.proximo:sec==="desparasitaciones"?rec.proxima:sec==="medicamentos"?rec.fin:sec==="operaciones"?rec.seguimiento:null;
+}
+
+// ── FOTO ─────────────────────────────────────────────────────────
+function triggerPhoto(){document.getElementById("photo-input").click();}
+function handlePhoto(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{localStorage.setItem("vet_photo",ev.target.result);applyPhoto(ev.target.result);};
+  r.readAsDataURL(file);
+}
+function applyPhoto(src){
+  const img=document.getElementById("home-photo"),ph=document.getElementById("home-photo-ph");
+  img.src=src;img.style.display="block";ph.style.display="none";
+}
+
+// ── NOMBRE ───────────────────────────────────────────────────────
+function startEditName(){
+  document.getElementById("name-display-wrap").style.display="none";
+  document.getElementById("name-edit-wrap").style.display="flex";
+  document.getElementById("name-input").value=document.getElementById("hero-name-label").textContent.trim();
+  document.getElementById("name-input").focus();
+}
+function saveName(){
+  const n=document.getElementById("name-input").value.trim()||"Malbec";
+  localStorage.setItem("vet_dogname",n);
+  document.getElementById("hero-name-label").textContent=n;
+  document.getElementById("name-display-wrap").style.display="block";
+  document.getElementById("name-edit-wrap").style.display="none";
+}
+
+function updateHeroChips(){
+  const raza=localStorage.getItem("vet_raza");
+  const cumple=localStorage.getItem("vet_cumple");
+  document.getElementById("chip-raza").innerHTML=raza?`🐕 ${raza}`:`🐕 <span style="color:#bbb">Agregar raza</span>`;
+  if(cumple){
+    const [y,m,d]=cumple.split("-");
+    const meses=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    document.getElementById("chip-cumple").innerHTML=`🎂 ${d} ${meses[parseInt(m)-1]}`;
+  } else {
+    document.getElementById("chip-cumple").innerHTML=`🎂 <span style="color:#bbb">Agregar cumple</span>`;
+  }
+}
+
+function editHeroField(field, label){
+  // Show inline bottom sheet
+  const current=localStorage.getItem("vet_"+field)||"";
+  const overlay=document.createElement("div");
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:998;display:flex;align-items:flex-end;justify-content:center;";
+  const box=document.createElement("div");
+  box.style.cssText="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:600px;";
+  const isDate=field==="cumple";
+  box.innerHTML=`
+    <div style="font-size:16px;font-weight:800;margin-bottom:16px;text-align:center">${label}</div>
+    <input id="hf-input" type="${isDate?"date":"text"}" value="${current}" placeholder="${isDate?"":"Ej: Salchicha miniatura"}" style="width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:15px;font-family:Nunito,sans-serif;outline:none;margin-bottom:14px">
+    <div style="display:flex;gap:10px">
+      <button onclick="this.closest('div').parentElement.parentElement.remove()" style="flex:1;background:#f0f0f0;color:#555;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;font-family:Nunito,sans-serif;cursor:pointer">Cancelar</button>
+      <button id="hf-save" style="flex:1;background:#2a9d8f;color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:800;font-family:Nunito,sans-serif;cursor:pointer">Guardar</button>
+    </div>`;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove();});
+  setTimeout(()=>document.getElementById("hf-input").focus(),100);
+  document.getElementById("hf-save").onclick=()=>{
+    const val=document.getElementById("hf-input").value.trim();
+    if(val)localStorage.setItem("vet_"+field,val);
+    else localStorage.removeItem("vet_"+field);
+    overlay.remove();
+    updateHeroChips();
+  };
+}
+
+// ── CARGA ────────────────────────────────────────────────────────
+function loadData(){
+  ["vacunas","visitas","desparasitaciones","medicamentos","operaciones"].forEach(s=>{
+    try{data[s]=JSON.parse(localStorage.getItem("vet_"+s)||"[]");}catch{data[s]=[];}
+  });
+  try{data.suplementos=JSON.parse(localStorage.getItem("vet_suplementos")||"[]");}catch{data.suplementos=[];}
+  try{data.consultas_nut=JSON.parse(localStorage.getItem("vet_consultas_nut")||"[]");}catch{data.consultas_nut=[];}
+  try{dietaBase=JSON.parse(localStorage.getItem("vet_dieta_base")||"[]");}catch{dietaBase=[];}
+  const n=localStorage.getItem("vet_dogname");
+  if(n) document.getElementById("hero-name-label").textContent=n;
+  const photo=localStorage.getItem("vet_photo");
+  if(photo) applyPhoto(photo);
+
+  // Date subtitle
+  const now=new Date();
+  const opts={weekday:"long",day:"numeric",month:"long"};
+  document.getElementById("hero-date-sub").textContent=now.toLocaleDateString("es-AR",opts);
+
+  updateHeroChips();
+
+  renderHome();
+  renderMasMenu();
+
+  // init form states
+  ["vacunas","visitas","desparasitaciones","medicamentos","operaciones"].forEach(s=>{
+    formState[s]={showForm:false,editIndex:null};
+  });
+  formState.nutricion={nutriTab:"dia",showForm:false,editIndex:null,showSupForm:false,supEditIdx:null,showConsForm:false,consEditIdx:null};
+}
+function saveSection(sec){localStorage.setItem("vet_"+sec,JSON.stringify(data[sec]));}
+function saveDieta(){localStorage.setItem("vet_dieta_base",JSON.stringify(dietaBase));}
+
+// ── NAVEGACIÓN ───────────────────────────────────────────────────
+function goTo(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll("#bottom-nav button").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.getElementById("nav-"+page)?.classList.add("active");
+  activePage=page;
+  // Hide FAB by default, sections will show it
+  document.getElementById("fab").classList.remove("visible");
+  if(page==="home") renderHome();
+  else if(page==="nutricion") renderNutricion();
+  else if(page!=="mas") renderSection(page);
+  else renderMasMenu();
+  window.scrollTo(0,0);
+}
+
+function fabAction(){
+  if(["vacunas","visitas","desparasitaciones","medicamentos","operaciones"].includes(activePage)){
+    openForm(activePage);
+  }
+}
+
+// ── HOME ─────────────────────────────────────────────────────────
+function renderHome(){
+  renderHomeDiet();
+  renderHomeUpcoming();
+}
+
+function renderHomeDiet(){
+  const dShort=DIAS_SHORT[homeDayIdx];
+  const dFull=DIAS_FULL[homeDayIdx];
+  document.getElementById("home-day-label").textContent=dFull;
+
+  const ingHoy=dietaBase.filter(ing=>{
+    const f=ing.frecuencia||"Diario";
+    if(f==="Diario")return true;
+    if(f==="Días alternos")return homeDayIdx%2===0;
+    if(f==="Semanal")return homeDayIdx===0;
+    return false;
+  });
+  const supHoy=(data.suplementos||[]).filter(s=>(s.dias||[]).includes(dShort));
+
+  const list=document.getElementById("home-diet-list");
+  if(!ingHoy.length&&!supHoy.length){
+    list.innerHTML=`<div class="no-diet">Sin elementos para este día 🐾<br><span style="font-size:11px">Agregá ingredientes en Nutrición</span></div>`;
+    return;
+  }
+  let html="";
+  ingHoy.forEach(ing=>{
+    const icon=ing.icono||getEmoji(ing.nombre);
+    html+=`<div class="diet-item">
+      <span class="diet-emoji">${icon}</span>
+      <span class="diet-name">${ing.nombre}</span>
+      <span class="diet-qty">${ing.cantidad}</span>
+      <span class="diet-tag food">Alimento</span>
+    </div>`;
+  });
+  supHoy.forEach(s=>{
+    const icon=s.icono||"💊", color=s.color||"#9b5de5";
+    html+=`<div class="diet-item">
+      <span class="diet-emoji">${icon}</span>
+      <span class="diet-name">${s.nombre}</span>
+      <span class="diet-qty">${s.dosis||""}</span>
+      <span class="diet-tag sup" style="background:${color}18;color:${color}">Suplemento</span>
+    </div>`;
+  });
+  list.innerHTML=html;
+}
+
+function homePrevDay(){homeDayIdx=(homeDayIdx+6)%7;renderHomeDiet();}
+function homeNextDay(){homeDayIdx=(homeDayIdx+1)%7;renderHomeDiet();}
+
+function renderHomeUpcoming(){
+  const container=document.getElementById("home-upcoming");
+  let items=[];
+
+  // Vacunas próximas
+  (data.vacunas||[]).forEach(r=>{
+    if(isUpcoming(r.proxima)){
+      const days=daysUntil(r.proxima);
+      items.push({icon:"💉",title:`Vacuna: ${r.tipo||"pendiente"}`,sub:r.veterinario||"",date:r.proxima,days,color:"#2a9d8f",action:"vacunas"});
+    }
+  });
+
+  // Visitas próximas
+  (data.visitas||[]).forEach(r=>{
+    if(isUpcoming(r.proximo)){
+      const days=daysUntil(r.proximo);
+      items.push({icon:"🏥",title:`Visita al vet`,sub:r.veterinario||r.motivo||"",date:r.proximo,days,color:"#e76f51",action:"visitas"});
+    }
+  });
+
+  // Desparasitaciones
+  (data.desparasitaciones||[]).forEach(r=>{
+    if(isUpcoming(r.proxima)){
+      const days=daysUntil(r.proxima);
+      items.push({icon:"🛡️",title:`Desparasitación`,sub:r.producto||"",date:r.proxima,days,color:"#57a773",action:"desparasitaciones"});
+    }
+  });
+
+  // Medicamentos
+  (data.medicamentos||[]).forEach(r=>{
+    if(isUpcoming(r.fin)){
+      const days=daysUntil(r.fin);
+      items.push({icon:"💊",title:`Medicamento: ${r.nombre||""}`,sub:`Fin del tratamiento`,date:r.fin,days,color:"#9b5de5",action:"medicamentos"});
+    }
+  });
+
+  // Consultas nutricionales
+  (data.consultas_nut||[]).forEach(r=>{
+    if(isUpcoming(r.fecha)){
+      const days=daysUntil(r.fecha);
+      items.push({icon:"🥗",title:`Consulta nutricional`,sub:r.profesional||"",date:r.fecha,days,color:"#e8a838",action:"nutricion"});
+    }
+  });
+
+  // Sort by date
+  items.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  if(!items.length){
+    container.innerHTML=`<div class="no-upcoming">🎉 Sin citas ni vencimientos pendientes</div>`;
+    return;
+  }
+
+  container.innerHTML=items.map(it=>{
+    const urg=urgency(it.days);
+    const label=it.days===0?"¡Hoy!":it.days===1?"¡Mañana!":it.days<=7?`en ${it.days} días`:it.days<=30?`en ${it.days} días`:`${fmtDate(it.date)}`;
+    const sublabel=it.days>7?`en ${it.days} días`:"";
+    return `<div class="upcoming-card" onclick="goTo('${it.action}')" style="border-left:4px solid ${it.color}">
+      <div class="upcoming-icon">${it.icon}</div>
+      <div class="upcoming-info">
+        <div class="upcoming-title">${it.title}</div>
+        ${it.sub?`<div class="upcoming-sub">${it.sub}</div>`:""}
+        <div class="upcoming-sub" style="margin-top:3px">${fmtDate(it.date)}${sublabel?" · "+sublabel:""}</div>
+      </div>
+      <div class="upcoming-date urg-${urg}">${label}</div>
+    </div>`;
+  }).join("");
+}
+
+// ── MÁS MENÚ ─────────────────────────────────────────────────────
+function renderMasMenu(){
+  const items=[
+    {id:"vacunas",icon:"💉",label:"Vacunas",color:"#2a9d8f"},
+    {id:"visitas",icon:"🏥",label:"Visitas al Vet",color:"#e76f51"},
+    {id:"desparasitaciones",icon:"🛡️",label:"Desparasitaciones",color:"#57a773"},
+    {id:"medicamentos",icon:"💊",label:"Medicamentos",color:"#9b5de5"},
+    {id:"operaciones",icon:"🩺",label:"Operaciones",color:"#e63946"},
+    {id:"nutricion",icon:"🥗",label:"Nutrición",color:"#e8a838"},
+  ];
+  const grid=document.querySelector("#page-mas .sec-content div");
+  grid.innerHTML=items.map(it=>`
+    <div onclick="goTo('${it.id}')" style="cursor:pointer;border-radius:14px;border:1.5px solid #eee;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+      <span style="font-size:32px">${it.icon}</span>
+      <span style="font-size:13px;font-weight:800;color:${it.color}">${it.label}</span>
+      <span style="font-size:11px;color:#aaa;font-weight:500">${(data[it.id]||[]).length} registro${(data[it.id]||[]).length!==1?"s":""}</span>
+    </div>`).join("");
+}
+
+// ── SECCIÓN GENÉRICA ─────────────────────────────────────────────
+function renderSection(sec){
+  const c=CFG[sec], st=formState[sec]||{}, recs=data[sec]||[];
+  const container=document.getElementById("content-"+sec);
+  document.documentElement.style.setProperty("--accent",c.accent);
+
+  // Update count in top-bar
+  const countEl=document.getElementById("count-"+sec);
+  if(countEl) countEl.textContent=recs.length+" registro"+(recs.length!==1?"s":"");
+
+  // Show FAB
+  const fab=document.getElementById("fab");
+  fab.style.background=c.accent;
+  fab.classList.add("visible");
+
+  let html="";
+
+  if(st.showForm){
+    html+=`<div class="form-box" style="border-top:3px solid ${c.accent}">
+      <h3 style="color:${c.accent}">${st.editIndex!==null?"✏️ Editar":"➕ Nuevo registro"}</h3>`;
+    c.fields.forEach(f=>{
+      const v=st.editIndex!==null?(recs[st.editIndex][f.k]||""):"";
+      html+=`<div class="field"><label>${f.l}</label>`;
+      html+=f.t==="textarea"?`<textarea id="f_${f.k}" rows="3">${v}</textarea>`:`<input id="f_${f.k}" type="${f.t}" value="${v}">`;
+      html+="</div>";
+    });
+    html+=`<div class="form-actions">
+      <button class="btn-save" style="background:${c.accent}" onclick="submitForm('${sec}')">${st.editIndex!==null?"Guardar cambios":"Guardar"}</button>
+      <button class="btn-cancel" onclick="closeForm('${sec}')">✕</button>
+    </div></div>`;
+  }
+
+  if(!recs.length&&!st.showForm){
+    html+=`<div class="empty"><div class="icon">${c.icon}</div><p>No hay registros aún</p><p class="sub">Tocá "+ Agregar" para comenzar</p></div>`;
+  } else {
+    recs.forEach((rec,idx)=>{
+      const nd=getNextDate(rec,sec), al=isUpcoming(nd), soon=isSoon(nd);
+      const daysLeft=nd?daysUntil(nd):null;
+      const alertLabel=daysLeft===0?"¡Es hoy!":daysLeft===1?"¡Es mañana!":daysLeft<=7?`⚠️ En ${daysLeft} días`:daysLeft<=30?`⚠️ En ${daysLeft} días`:`📅 ${fmtDate(nd)}`;
+      html+=`<div class="record${soon?" alert-rec":al?" alert-rec":""}">`; 
+      if(al)html+=`<div class="alert-tag">${alertLabel}</div>`;
+      html+=`<div class="rec-fields">`;
+      c.fields.filter(f=>f.t!=="textarea"&&rec[f.k]).forEach(f=>{
+        html+=`<div><div class="rf-label">${f.l}</div><div class="rf-val${f.t==="date"?" bold":""}">${f.t==="date"?fmtDate(rec[f.k]):rec[f.k]}</div></div>`;
+      });
+      html+="</div>";
+      c.fields.filter(f=>f.t==="textarea"&&rec[f.k]).forEach(f=>{
+        html+=`<div class="rec-note"><div class="rf-label">${f.l}</div><p>${rec[f.k]}</p></div>`;
+      });
+      html+=`<div class="rec-actions">
+        <button class="btn-edit" style="background:${c.accent}18;color:${c.accent}" onclick="openEdit('${sec}',${idx})">✏️ Editar</button>
+        <button class="btn-del" onclick="deleteRecord('${sec}',${idx})">🗑️ Eliminar</button>
+      </div></div>`;
+    });
+  }
+  container.innerHTML=html;
+}
+
+function openForm(sec){formState[sec].showForm=true;formState[sec].editIndex=null;document.getElementById("fab").classList.remove("visible");renderSection(sec);}
+function openEdit(sec,idx){formState[sec].showForm=true;formState[sec].editIndex=idx;document.getElementById("fab").classList.remove("visible");renderSection(sec);}
+function closeForm(sec){formState[sec].showForm=false;formState[sec].editIndex=null;document.getElementById("fab").classList.add("visible");renderSection(sec);}
+function deleteRecord(sec,idx){
+  askConfirm("¿Eliminar este registro?",()=>{ data[sec].splice(idx,1);saveSection(sec);renderSection(sec);if(activePage==="home")renderHome(); });
+}
+function submitForm(sec){
+  const c=CFG[sec],rec={};
+  c.fields.forEach(f=>{rec[f.k]=document.getElementById("f_"+f.k)?.value||"";});
+  const st=formState[sec];
+  if(st.editIndex!==null)data[sec][st.editIndex]=rec;else data[sec].unshift(rec);
+  saveSection(sec);st.showForm=false;st.editIndex=null;
+  document.getElementById("fab").classList.add("visible");
+  renderSection(sec);
+  if(activePage==="home")renderHome();
+}
+
+// ── NUTRICIÓN ────────────────────────────────────────────────────
+function renderNutricion(){
+  const st=formState.nutricion;
+  document.documentElement.style.setProperty("--accent","#e8a838");
+  const accent="#e8a838";
+  let html=`<div class="sub-tabs">
+    <button class="sub-tab${st.nutriTab==="dia"?" active":""}" style="${st.nutriTab==="dia"?"background:#e8a838":""}" onclick="setNutriTab('dia')">📅 Por día</button>
+    <button class="sub-tab${st.nutriTab==="dieta"?" active":""}" style="${st.nutriTab==="dieta"?"background:#e8a838":""}" onclick="setNutriTab('dieta')">🍖 Dieta base</button>
+    <button class="sub-tab${st.nutriTab==="suplementos"?" active":""}" style="${st.nutriTab==="suplementos"?"background:#e8a838":""}" onclick="setNutriTab('suplementos')">💊 Suplementos</button>
+    <button class="sub-tab${st.nutriTab==="consultas"?" active":""}" style="${st.nutriTab==="consultas"?"background:#e8a838":""}" onclick="setNutriTab('consultas')">👩‍⚕️ Consultas</button>
+  </div>`;
+  if(st.nutriTab==="dia")html+=renderNutriDia();
+  else if(st.nutriTab==="dieta")html+=renderNutriBase();
+  else if(st.nutriTab==="suplementos")html+=renderNutriSup();
+  else html+=renderNutriCons();
+  document.getElementById("content-nutricion").innerHTML=html;
+}
+
+function setNutriTab(t){
+  const st=formState.nutricion;
+  st.nutriTab=t;st.showForm=st.showSupForm=st.showConsForm=false;
+  st.editIndex=st.supEditIdx=st.consEditIdx=null;selectedDias=[];
+  renderNutricion();
+}
+
+function renderNutriDia(){
+  const dShort=DIAS_SHORT[homeDayIdx], dFull=DIAS_FULL[homeDayIdx];
+  const ingHoy=dietaBase.filter(ing=>{
+    const f=ing.frecuencia||"Diario";
+    if(f==="Diario")return true;
+    if(f==="Días alternos")return homeDayIdx%2===0;
+    if(f==="Semanal")return homeDayIdx===0;
+    return false;
+  });
+  const supHoy=(data.suplementos||[]).filter(s=>(s.dias||[]).includes(dShort));
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;background:#f9f9f9;border-radius:12px;padding:10px 14px;margin-bottom:14px">
+    <button class="day-nav-btn" onclick="prevNutriDay()">‹</button>
+    <div style="text-align:center">
+      <div style="font-size:16px;font-weight:800">${dFull}</div>
+      <div style="font-size:11px;color:#777;margin-top:2px">${ingHoy.length} alimento${ingHoy.length!==1?"s":""} · ${supHoy.length} suplemento${supHoy.length!==1?"s":""}</div>
+    </div>
+    <button class="day-nav-btn" onclick="nextNutriDay()">›</button>
+  </div>`;
+  if(!ingHoy.length&&!supHoy.length){
+    html+=`<div class="empty"><div class="icon">😴</div><p>Sin elementos para este día</p><p class="sub">Agregá ingredientes o suplementos</p></div>`;
+    return html;
+  }
+  if(ingHoy.length){
+    html+=`<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:#555;margin-bottom:8px">🍖 Alimentación</div>`;
+    ingHoy.forEach(ing=>{
+      html+=`<div class="ing-row"><div class="ing-emoji">${getEmoji(ing.nombre)}</div><div class="ing-info"><div class="ing-nombre">${ing.nombre}</div><div class="ing-sub">${ing.cantidad}${ing.notas?" · "+ing.notas:""}</div></div></div>`;
+    });
+  }
+  if(supHoy.length){
+    html+=`<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:#555;margin:12px 0 8px">💊 Suplementos</div>`;
+    supHoy.forEach(s=>{
+      const icon=s.icono||"💊", color=s.color||"#9b5de5";
+      html+=`<div class="ing-row" style="background:${color}0d;border-color:${color}33"><div class="ing-emoji" style="background:${color}18;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center">${icon}</div><div class="ing-info"><div class="ing-nombre">${s.nombre}</div><div class="ing-sub">${s.dosis||""}${s.notas?" · "+s.notas:""}</div></div></div>`;
+    });
+  }
+  return html;
+}
+
+function prevNutriDay(){homeDayIdx=(homeDayIdx+6)%7;renderNutricion();if(activePage==="home")renderHomeDiet();}
+function nextNutriDay(){homeDayIdx=(homeDayIdx+1)%7;renderNutricion();if(activePage==="home")renderHomeDiet();}
+
+// ── PICKERS ──────────────────────────────────────────────────────
+const ING_ICONS=["🍗","🥩","🐟","🥕","🎃","🍚","🥔","🍠","🥦","🌿","🥚","🫒","🫀","🍖","🌽","🍎","🫐","🧀","🥜","🌾","🥗","🍠","🐾","🥘"];
+const SUP_ICONS=["💊","🌿","🫐","🐟","🥕","🦴","💧","⭐","🌱","🔬","🧪","🍋","🫚","🌸","🧬","💉"];
+const SUP_COLORS=["#9b5de5","#e76f51","#2a9d8f","#e63946","#57a773","#e8a838","#3a86ff","#ff6b9d","#06d6a0","#f77f00","#4cc9f0","#7b2d8b"];
+
+let selectedIngIcon="", selectedSupIcon="", selectedSupColor="#9b5de5";
+
+function renderIconPicker(icons, selectedVal, onClickFn, label){
+  return `<div class="field"><label>${label}</label>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px">
+      ${icons.map(ic=>`<button type="button" onclick="${onClickFn}('${ic}',this)"
+        style="width:36px;height:36px;border-radius:9px;border:2px solid ${selectedVal===ic?'#e8a838':'#eee'};
+        background:${selectedVal===ic?'#fff9e0':'#fff'};font-size:18px;cursor:pointer;transition:all 0.1s">${ic}</button>`).join("")}
+    </div></div>`;
+}
+
+function renderColorPicker(colors, selectedVal){
+  return `<div class="field"><label>Color del suplemento</label>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px">
+      ${colors.map(c=>`<button type="button" onclick="pickSupColor('${c}',this)"
+        style="width:32px;height:32px;border-radius:50%;background:${c};border:3px solid ${selectedVal===c?'#333':'transparent'};cursor:pointer;transition:all 0.1s"></button>`).join("")}
+    </div></div>`;
+}
+
+function pickIngIcon(ic, btn){
+  selectedIngIcon=ic;
+  document.querySelectorAll("#ing-icon-picker button").forEach(b=>{b.style.borderColor="#eee";b.style.background="#fff";});
+  btn.style.borderColor="#e8a838";btn.style.background="#fff9e0";
+}
+function pickSupIcon(ic, btn){
+  selectedSupIcon=ic;
+  document.querySelectorAll("#sup-icon-picker button").forEach(b=>{b.style.borderColor="#eee";b.style.background="#fff";});
+  btn.style.borderColor="#e8a838";btn.style.background="#fff9e0";
+}
+function pickSupColor(c, btn){
+  selectedSupColor=c;
+  document.querySelectorAll("#sup-color-picker button").forEach(b=>{b.style.borderColor="transparent";});
+  btn.style.borderColor="#333";
+}
+
+function renderNutriBase(){
+  const st=formState.nutricion, accent="#e8a838";
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <small style="color:#777;font-weight:600">Base de la dieta</small>
+    <button class="btn-add" style="background:${accent};font-size:12px;padding:7px 13px" onclick="openIngForm()">+ Ingrediente</button>
+  </div>`;
+  if(st.showForm){
+    const ing=st.editIndex!==null?dietaBase[st.editIndex]:{};
+    const curIcon=selectedIngIcon||ing.icono||"";
+    html+=`<div class="form-box" style="border-top:3px solid ${accent}">
+      <h3 style="color:${accent}">🍖 ${st.editIndex!==null?"Editar":"Nuevo ingrediente"}</h3>
+      <div class="field"><label>Ingrediente</label><input id="ing_nombre" type="text" placeholder="Ej: Pollo, Zanahoria..." value="${ing.nombre||""}"></div>
+      <div class="field"><label>Cantidad</label><input id="ing_cantidad" type="text" placeholder="Ej: 150g..." value="${ing.cantidad||""}"></div>
+      <div class="field"><label>Frecuencia</label>
+        <select id="ing_frecuencia">
+          <option value="Diario" ${(ing.frecuencia||"Diario")==="Diario"?"selected":""}>Diario</option>
+          <option value="Días alternos" ${ing.frecuencia==="Días alternos"?"selected":""}>Días alternos</option>
+          <option value="Semanal" ${ing.frecuencia==="Semanal"?"selected":""}>Semanal (lunes)</option>
+          <option value="Según necesidad" ${ing.frecuencia==="Según necesidad"?"selected":""}>Según necesidad</option>
+        </select>
+      </div>
+      <div id="ing-icon-picker">${renderIconPicker(ING_ICONS, curIcon, "pickIngIcon", "Ícono")}</div>
+      <div class="field"><label>Notas</label><textarea id="ing_notas" rows="2">${ing.notas||""}</textarea></div>
+      <div class="form-actions">
+        <button class="btn-save" style="background:${accent}" onclick="submitIng()">${st.editIndex!==null?"Guardar":"Agregar"}</button>
+        <button class="btn-cancel" onclick="closeIngForm()">✕</button>
+      </div></div>`;
+  }
+  if(!dietaBase.length&&!st.showForm){
+    html+=`<div class="empty"><div class="icon">🍖</div><p>Sin ingredientes aún</p><p class="sub">Cargá la dieta de Malbec</p></div>`;
+  } else {
+    dietaBase.forEach((ing,idx)=>{
+      const icon=ing.icono||getEmoji(ing.nombre);
+      html+=`<div class="ing-row"><div class="ing-emoji">${icon}</div>
+        <div class="ing-info"><div class="ing-nombre">${ing.nombre}</div><div class="ing-sub">${ing.cantidad} · ${ing.frecuencia}${ing.notas?" · "+ing.notas:""}</div></div>
+        <div class="ing-actions">
+          <button class="ing-btn" style="background:#e8a83818;color:#e8a838" onclick="editIng(${idx})">✏️</button>
+          <button class="ing-btn" style="background:#fff0f0;color:#e63946" onclick="delIng(${idx})">🗑️</button>
+        </div></div>`;
+    });
+  }
+  return html;
+}
+
+// ── CICLO HELPER ─────────────────────────────────────────────────
+// Returns {activa, semanaActual, tipo} given a supplement with cycle config
+function cicloStatus(s){
+  if(!s.cicloActivo || !s.cicloInicio) return {activa:true};
+  const semActivas=parseInt(s.semActivas)||1;
+  const semDescanso=parseInt(s.semDescanso)||1;
+  const inicio=new Date(s.cicloInicio);
+  const hoy=new Date();
+  const diffDias=Math.floor((hoy-inicio)/86400000);
+  if(diffDias<0) return {activa:false, tipo:"aun-no", semanaActual:0};
+  const cicloTotal=semActivas+semDescanso;
+  const semActual=Math.floor(diffDias/7);
+  const posEnCiclo=semActual % cicloTotal;
+  const activa=posEnCiclo < semActivas;
+  return {activa, semanaActual:semActual+1, posEnCiclo, semActivas, semDescanso, cicloTotal, tipo: activa?"activa":"descanso"};
+}
+
+function renderNutriSup(){
+  const st=formState.nutricion, sups=data.suplementos||[], accent="#e8a838";
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <small style="color:#777;font-weight:600">${sups.length} suplemento${sups.length!==1?"s":""}</small>
+    <button class="btn-add" style="background:${accent};font-size:12px;padding:7px 13px" onclick="openSupForm()">+ Suplemento</button>
+  </div>`;
+  if(st.showSupForm){
+    const s=st.supEditIdx!==null?sups[st.supEditIdx]:{}, selD=s.dias||selectedDias;
+    const curIcon=selectedSupIcon||s.icono||"💊";
+    const curColor=selectedSupColor||s.color||"#9b5de5";
+    const tieneCiclo=s.cicloActivo||false;
+    html+=`<div class="form-box" style="border-top:3px solid ${accent}">
+      <h3 style="color:${accent}">💊 ${st.supEditIdx!==null?"Editar":"Nuevo suplemento"}</h3>
+      <div class="field"><label>Suplemento</label><input id="sup_nombre" type="text" placeholder="Ej: Omega 3..." value="${s.nombre||""}"></div>
+      <div class="field"><label>Dosis</label><input id="sup_dosis" type="text" placeholder="Ej: 1 cápsula..." value="${s.dosis||""}"></div>
+      <div class="field"><label>Días de la semana</label>
+        <div class="dias-grid">${DIAS_SHORT.map(d=>`<button type="button" class="dia-btn${selD.includes(d)?" sel":""}" style="${selD.includes(d)?"background:#e8a838;color:white":""}" onclick="toggleDia('${d}',this)">${d}</button>`).join("")}</div>
+      </div>
+
+      <div class="field" style="background:#f9f9f9;border-radius:12px;padding:12px;border:1.5px solid #eee">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${tieneCiclo?"12px":"0"}">
+          <label style="margin:0;font-size:11px;font-weight:800;color:#555;letter-spacing:0.6px;text-transform:uppercase">🔄 Ciclo de semanas</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin:0">
+            <input type="checkbox" id="sup_ciclo_activo" ${tieneCiclo?"checked":""} onchange="toggleCicloFields(this.checked)" style="width:18px;height:18px;cursor:pointer;accent-color:#e8a838">
+            <span style="font-size:12px;font-weight:600;color:#777">${tieneCiclo?"Activado":"Activar"}</span>
+          </label>
+        </div>
+        <div id="ciclo-fields" style="display:${tieneCiclo?"block":"none"}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div><label style="display:block;font-size:10px;color:#888;font-weight:700;margin-bottom:4px;text-transform:uppercase">Semanas activas</label>
+              <input id="sup_sem_activas" type="number" min="1" max="52" value="${s.semActivas||3}" style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:15px;font-weight:700;text-align:center;font-family:Nunito,sans-serif"></div>
+            <div><label style="display:block;font-size:10px;color:#888;font-weight:700;margin-bottom:4px;text-transform:uppercase">Semanas descanso</label>
+              <input id="sup_sem_descanso" type="number" min="1" max="52" value="${s.semDescanso||1}" style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:15px;font-weight:700;text-align:center;font-family:Nunito,sans-serif"></div>
+          </div>
+          <div><label style="display:block;font-size:10px;color:#888;font-weight:700;margin-bottom:4px;text-transform:uppercase">Fecha de inicio del ciclo</label>
+            <input id="sup_ciclo_inicio" type="date" value="${s.cicloInicio||""}" style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;font-family:Nunito,sans-serif"></div>
+          <div style="margin-top:8px;font-size:11.5px;color:#aaa;font-weight:500">Ej: 3 semanas activas + 1 de descanso, se repite automáticamente</div>
+        </div>
+      </div>
+
+      <div id="sup-icon-picker">${renderIconPicker(SUP_ICONS, curIcon, "pickSupIcon", "Ícono")}</div>
+      <div id="sup-color-picker">${renderColorPicker(SUP_COLORS, curColor)}</div>
+      <div class="field"><label>Notas</label><textarea id="sup_notas" rows="2">${s.notas||""}</textarea></div>
+      <div class="form-actions">
+        <button class="btn-save" style="background:${accent}" onclick="submitSup()">${st.supEditIdx!==null?"Guardar":"Agregar"}</button>
+        <button class="btn-cancel" onclick="closeSupForm()">✕</button>
+      </div></div>`;
+  }
+  if(!sups.length&&!st.showSupForm){
+    html+=`<div class="empty"><div class="icon">💊</div><p>Sin suplementos aún</p></div>`;
+  } else {
+    sups.forEach((s,idx)=>{
+      const icon=s.icono||"💊";
+      const color=s.color||"#9b5de5";
+      const ciclo=cicloStatus(s);
+      let cicloTag="";
+      if(s.cicloActivo){
+        if(ciclo.tipo==="activa"){
+          cicloTag=`<span style="background:${color}18;color:${color};border-radius:20px;padding:2px 10px;font-size:10.5px;font-weight:800">✅ Semana activa</span>`;
+        } else if(ciclo.tipo==="descanso"){
+          cicloTag=`<span style="background:#f5f5f5;color:#aaa;border-radius:20px;padding:2px 10px;font-size:10.5px;font-weight:800">😴 Semana de descanso</span>`;
+        } else if(ciclo.tipo==="aun-no"){
+          cicloTag=`<span style="background:#fff9e0;color:#a07800;border-radius:20px;padding:2px 10px;font-size:10.5px;font-weight:800">📅 Ciclo no iniciado</span>`;
+        }
+      }
+      html+=`<div class="record" style="border-left:4px solid ${ciclo.tipo==="descanso"?"#ddd":color}${ciclo.tipo==="descanso"?";opacity:0.6":""}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:26px;width:36px;height:36px;background:${color}18;border-radius:10px;display:flex;align-items:center;justify-content:center">${icon}</span>
+          <div style="flex:1"><div class="rf-val bold" style="font-size:15px">${s.nombre}</div><div class="rf-label" style="margin-top:1px">${s.dosis||"—"}</div></div>
+          ${cicloTag}
+        </div>
+        ${s.dias?.length?`<div style="margin-bottom:8px"><div class="rf-label">Días</div><div class="dias-chips">${s.dias.map(d=>`<span class="dia-chip" style="background:${ciclo.tipo==="descanso"?"#ccc":color}">${d}</span>`).join("")}</div></div>`:""}
+        ${s.cicloActivo?`<div style="margin-bottom:8px"><div class="rf-label">Ciclo</div><div style="font-size:12.5px;color:#555;font-weight:600;margin-top:2px">${s.semActivas} sem. activas · ${s.semDescanso} sem. descanso · desde ${fmtDate(s.cicloInicio)}</div></div>`:""}
+        ${s.notas?`<div class="rec-note"><div class="rf-label">Notas</div><p>${s.notas}</p></div>`:""}
+        <div class="rec-actions">
+          <button class="btn-edit" style="background:${color}18;color:${color}" onclick="editSup(${idx})">✏️ Editar</button>
+          <button class="btn-del" onclick="delSup(${idx})">🗑️ Eliminar</button>
+        </div></div>`;
+    });
+  }
+  return html;
+}
+
+function toggleCicloFields(checked){
+  document.getElementById("ciclo-fields").style.display=checked?"block":"none";
+  document.querySelector("#sup_ciclo_activo+span").textContent=checked?"Activado":"Activar";
+}
+function renderNutriCons(){
+  const st=formState.nutricion, cons=data.consultas_nut||[], accent="#e8a838";
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <small style="color:#777;font-weight:600">${cons.length} consulta${cons.length!==1?"s":""}</small>
+    <button class="btn-add" style="background:${accent};font-size:12px;padding:7px 13px" onclick="openConsForm()">+ Consulta</button>
+  </div>`;
+  if(st.showConsForm){
+    const c=st.consEditIdx!==null?cons[st.consEditIdx]:{};
+    html+=`<div class="form-box" style="border-top:3px solid ${accent}">
+      <h3 style="color:${accent}">👩‍⚕️ ${st.consEditIdx!==null?"Editar":"Nueva consulta"}</h3>
+      <div class="field"><label>Fecha de la consulta</label><input id="con_fecha" type="date" value="${c.fecha||""}"></div>
+      <div class="field"><label>Profesional / Clínica</label><input id="con_prof" type="text" placeholder="Nombre del nutricionista..." value="${c.profesional||""}"></div>
+      <div class="field"><label>Motivo</label><input id="con_motivo" type="text" value="${c.motivo||""}"></div>
+      <div class="field"><label>Recomendaciones</label><textarea id="con_recom" rows="4">${c.recomendaciones||""}</textarea></div>
+      <div class="field"><label>Notas</label><textarea id="con_notas" rows="2">${c.notas||""}</textarea></div>
+      <div class="form-actions">
+        <button class="btn-save" style="background:${accent}" onclick="submitCons()">Guardar</button>
+        <button class="btn-cancel" onclick="closeConsForm()">✕</button>
+      </div></div>`;
+  }
+  if(!cons.length&&!st.showConsForm){
+    html+=`<div class="empty"><div class="icon">👩‍⚕️</div><p>Sin consultas aún</p></div>`;
+  } else {
+    cons.forEach((c,idx)=>{
+      const futura=isUpcoming(c.fecha);
+      const daysLeft=c.fecha?daysUntil(c.fecha):null;
+      const alertLabel=daysLeft===0?"¡Es hoy!":daysLeft===1?"¡Es mañana!":daysLeft<=7?`⚠️ En ${daysLeft} días`:daysLeft<=30?`⚠️ En ${daysLeft} días`:`📅 En ${daysLeft} días`;
+      html+=`<div class="record${futura?" alert-rec":""}">
+        ${futura?`<div class="alert-tag">${alertLabel}</div>`:""}
+        <div class="rec-fields">
+          <div><div class="rf-label">${futura?"Fecha programada":"Fecha"}</div><div class="rf-val bold">${fmtDate(c.fecha)}</div></div>
+          <div><div class="rf-label">Profesional</div><div class="rf-val">${c.profesional||"—"}</div></div>
+          ${c.motivo?`<div class="rf-full"><div class="rf-label">Motivo</div><div class="rf-val">${c.motivo}</div></div>`:""}
+        </div>
+        ${c.recomendaciones?`<div class="rec-note"><div class="rf-label">Recomendaciones / Notas previas</div><p>${c.recomendaciones}</p></div>`:""}
+        ${c.notas?`<div class="rec-note"><div class="rf-label">Notas</div><p>${c.notas}</p></div>`:""}
+        <div class="rec-actions">
+          <button class="btn-edit" style="background:#e8a83818;color:#e8a838" onclick="editCons(${idx})">✏️ Editar</button>
+          <button class="btn-del" onclick="delCons(${idx})">🗑️ Eliminar</button>
+        </div></div>`;
+    });
+  }
+  return html;
+}
+
+// ── ACCIONES NUTRICIÓN ───────────────────────────────────────────
+function openIngForm(){formState.nutricion.showForm=true;formState.nutricion.editIndex=null;renderNutricion();}
+function editIng(idx){formState.nutricion.showForm=true;formState.nutricion.editIndex=idx;renderNutricion();}
+function openIngForm(){selectedIngIcon="";formState.nutricion.showForm=true;formState.nutricion.editIndex=null;renderNutricion();}
+function editIng(idx){selectedIngIcon=dietaBase[idx].icono||"";formState.nutricion.showForm=true;formState.nutricion.editIndex=idx;renderNutricion();}
+function closeIngForm(){formState.nutricion.showForm=false;formState.nutricion.editIndex=null;renderNutricion();}
+function delIng(idx){askConfirm("¿Eliminar este ingrediente?",()=>{dietaBase.splice(idx,1);saveDieta();renderNutricion();if(activePage==="home")renderHome();});}
+function submitIng(){
+  const st=formState.nutricion;
+  const ing={nombre:document.getElementById("ing_nombre").value.trim(),cantidad:document.getElementById("ing_cantidad").value.trim(),frecuencia:document.getElementById("ing_frecuencia").value,icono:selectedIngIcon||getEmoji(document.getElementById("ing_nombre").value.trim()),notas:document.getElementById("ing_notas").value.trim()};
+  if(!ing.nombre)return alert("Ingresá el nombre");
+  if(st.editIndex!==null)dietaBase[st.editIndex]=ing;else dietaBase.push(ing);
+  saveDieta();st.showForm=false;st.editIndex=null;selectedIngIcon="";renderNutricion();if(activePage==="home")renderHome();
+}
+function openSupForm(){selectedSupIcon="💊";selectedSupColor="#9b5de5";formState.nutricion.showSupForm=true;formState.nutricion.supEditIdx=null;selectedDias=[];renderNutricion();}
+function editSup(idx){const s=data.suplementos[idx];selectedSupIcon=s.icono||"💊";selectedSupColor=s.color||"#9b5de5";formState.nutricion.showSupForm=true;formState.nutricion.supEditIdx=idx;selectedDias=[...(s.dias||[])];renderNutricion();}
+function closeSupForm(){formState.nutricion.showSupForm=false;formState.nutricion.supEditIdx=null;selectedDias=[];renderNutricion();}
+function delSup(idx){askConfirm("¿Eliminar este suplemento?",()=>{data.suplementos.splice(idx,1);saveSection("suplementos");renderNutricion();if(activePage==="home")renderHome();});}
+function toggleDia(dia,btn){
+  if(selectedDias.includes(dia)){selectedDias=selectedDias.filter(d=>d!==dia);btn.classList.remove("sel");btn.style.background="";btn.style.color="";}
+  else{selectedDias.push(dia);btn.classList.add("sel");btn.style.background="#e8a838";btn.style.color="white";}
+}
+function submitSup(){
+  const st=formState.nutricion;
+  const cicloActivo=document.getElementById("sup_ciclo_activo")?.checked||false;
+  const s={
+    nombre:document.getElementById("sup_nombre").value.trim(),
+    dosis:document.getElementById("sup_dosis").value.trim(),
+    dias:[...selectedDias],
+    icono:selectedSupIcon||"💊",
+    color:selectedSupColor||"#9b5de5",
+    notas:document.getElementById("sup_notas").value.trim(),
+    cicloActivo,
+    semActivas:cicloActivo?(parseInt(document.getElementById("sup_sem_activas")?.value)||3):null,
+    semDescanso:cicloActivo?(parseInt(document.getElementById("sup_sem_descanso")?.value)||1):null,
+    cicloInicio:cicloActivo?(document.getElementById("sup_ciclo_inicio")?.value||""):null,
+  };
+  if(!s.nombre)return alert("Ingresá el nombre");
+  if(st.supEditIdx!==null)data.suplementos[st.supEditIdx]=s;else data.suplementos.unshift(s);
+  saveSection("suplementos");st.showSupForm=false;st.supEditIdx=null;selectedDias=[];selectedSupIcon="";renderNutricion();if(activePage==="home")renderHome();
+}
+function openConsForm(){formState.nutricion.showConsForm=true;formState.nutricion.consEditIdx=null;renderNutricion();}
+function editCons(idx){formState.nutricion.showConsForm=true;formState.nutricion.consEditIdx=idx;renderNutricion();}
+function closeConsForm(){formState.nutricion.showConsForm=false;formState.nutricion.consEditIdx=null;renderNutricion();}
+function delCons(idx){askConfirm("¿Eliminar esta consulta?",()=>{data.consultas_nut.splice(idx,1);saveSection("consultas_nut");renderNutricion();if(activePage==="home")renderHome();});}
+function submitCons(){
+  const st=formState.nutricion;
+  const c={fecha:document.getElementById("con_fecha").value,profesional:document.getElementById("con_prof").value.trim(),motivo:document.getElementById("con_motivo").value.trim(),recomendaciones:document.getElementById("con_recom").value.trim(),notas:document.getElementById("con_notas").value.trim()};
+  if(st.consEditIdx!==null)data.consultas_nut[st.consEditIdx]=c;else data.consultas_nut.unshift(c);
+  saveSection("consultas_nut");st.showConsForm=false;st.consEditIdx=null;renderNutricion();if(activePage==="home")renderHome();
+}
+
+loadData();
+</script>
+</body>
+</html>

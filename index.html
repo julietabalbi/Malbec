@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#ffffff">
-<title>🌭 Malbec</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Malbec">
+<title>Malbec</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23fff3e0'/%3E%3Cellipse cx='90' cy='105' rx='32' ry='26' fill='%23e07b39'/%3E%3Cellipse cx='55' cy='75' rx='13' ry='17' fill='%23e07b39'/%3E%3Cellipse cx='125' cy='75' rx='13' ry='17' fill='%23e07b39'/%3E%3Cellipse cx='72' cy='58' rx='10' ry='13' fill='%23e07b39'/%3E%3Cellipse cx='108' cy='58' rx='10' ry='13' fill='%23e07b39'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme:light only; --accent:#2a9d8f; }
@@ -666,7 +670,6 @@ function renderMasMenu(){
   div.innerHTML=`
     <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#bbb;margin-bottom:10px">Datos</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <button onclick="diagnosticarStorage()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff8e1;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">🔍 Diagnóstico</button>
       <button onclick="exportarDatos()" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">⬇️ Exportar</button>
       <label for="import-input" style="padding:12px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fafafa;font-size:12.5px;font-weight:800;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin:0">⬆️ Importar</label>
     </div>`;
@@ -826,7 +829,7 @@ function nextNutriDay(){ homeDate.setDate(homeDate.getDate()+1); renderNutricion
 
 // ── PICKERS ──────────────────────────────────────────────────────
 const ING_ICONS=["🍗","🥩","🐟","🥕","🎃","🍚","🥔","🍠","🥦","🌿","🥚","🫒","🫀","🍖","🌽","🍎","🫐","🧀","🥜","🌾","🥗","🍠","🐾","🥘"];
-const SUP_ICONS=["💊","🌿","🫐","🐟","🥕","🦴","💧","⭐","🌱","🔬","🧪","🍋","🫚","🌸","🧬","💉"];
+const SUP_ICONS=["💊","🌿","🫐","🐟","🥕","🦴","💧","⭐","🌱","🔬","🧪","🍋","🫚","🌸","🧬","💉","🥚","🌰","🫘","🥜","🍯","🧄","🫛","🌾","🍵","🧅","🥥","🍄","🩺","✨"];
 const SUP_COLORS=["#9b5de5","#e76f51","#2a9d8f","#e63946","#57a773","#e8a838","#3a86ff","#ff6b9d","#06d6a0","#f77f00","#4cc9f0","#7b2d8b"];
 
 let selectedIngIcon="", selectedSupIcon="", selectedSupColor="#9b5de5";
@@ -1110,29 +1113,6 @@ function submitCons(){
 }
 
 // ── EXPORTAR / IMPORTAR ──────────────────────────────────────────
-function diagnosticarStorage(){
-  const keys=["vet_dogname","vet_raza","vet_cumple","vet_vacunas","vet_visitas",
-    "vet_desparasitaciones","vet_medicamentos","vet_operaciones",
-    "vet_suplementos","vet_consultas_nut","vet_dieta_base"];
-  let msg="📦 localStorage:\n";
-  keys.forEach(k=>{
-    const v=localStorage.getItem(k);
-    if(!v) msg+=`❌ ${k}: vacío\n`;
-    else {
-      try{
-        const arr=JSON.parse(v);
-        if(Array.isArray(arr)) msg+=`✅ ${k}: ${arr.length} items\n`;
-        else msg+=`✅ ${k}: "${String(v).substring(0,30)}"\n`;
-      }catch{ msg+=`✅ ${k}: "${String(v).substring(0,30)}"\n`; }
-    }
-  });
-  msg+="\n📝 En memoria:\n";
-  msg+=`suplementos: ${(data.suplementos||[]).length}\n`;
-  msg+=`consultas_nut: ${(data.consultas_nut||[]).length}\n`;
-  msg+=`dietaBase: ${(dietaBase||[]).length}\n`;
-  alert(msg);
-}
-
 function exportarDatos(){
   const keys=["vet_dogname","vet_raza","vet_cumple","vet_photo",
     "vet_vacunas","vet_visitas","vet_desparasitaciones","vet_medicamentos",

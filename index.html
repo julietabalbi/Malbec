@@ -172,7 +172,7 @@
   #confirm-msg { font-size:16px; font-weight:700; margin-bottom:18px; text-align:center; color:#1a1a1a; }
   #confirm-btns { display:flex; gap:10px; }
   #confirm-cancel-btn { flex:1; background:#f0f0f0; color:#555; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:700; cursor:pointer; }
-  #confirm-ok-btn { flex:1; background:#e63946; color:#fff; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:800; cursor:pointer; }
+  #confirm-ok-btn { flex:1; color:#fff; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:800; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -311,8 +311,8 @@
   <div id="confirm-box">
     <div id="confirm-msg">¿Eliminar este registro?</div>
     <div id="confirm-btns">
-      <button id="confirm-cancel-btn" onclick="confirmCancel()">Cancelar</button>
-      <button id="confirm-ok-btn" onclick="confirmOk()">Eliminar</button>
+      <button id="confirm-cancel-btn">Cancelar</button>
+      <button id="confirm-ok-btn">Eliminar</button>
     </div>
   </div>
 </div>
@@ -320,13 +320,27 @@
 <script>
 // ── CUSTOM CONFIRM ───────────────────────────────────────────────
 let _confirmCallback=null;
-function askConfirm(msg, cb){
+function askConfirm(msg, cb, okLabel="Eliminar", okColor="#e63946"){
   document.getElementById("confirm-msg").textContent=msg;
+  const okBtn=document.getElementById("confirm-ok-btn");
+  okBtn.textContent=okLabel;
+  okBtn.style.background=okColor;
   document.getElementById("confirm-overlay").classList.add("show");
   _confirmCallback=cb;
 }
-function confirmOk(){ document.getElementById("confirm-overlay").classList.remove("show"); if(_confirmCallback)_confirmCallback(); _confirmCallback=null; }
-function confirmCancel(){ document.getElementById("confirm-overlay").classList.remove("show"); _confirmCallback=null; }
+function confirmOk(){
+  document.getElementById("confirm-overlay").classList.remove("show");
+  const cb=_confirmCallback;
+  _confirmCallback=null;
+  if(cb) cb();
+}
+function confirmCancel(){
+  document.getElementById("confirm-overlay").classList.remove("show");
+  _confirmCallback=null;
+}
+document.getElementById("confirm-ok-btn").addEventListener("click", confirmOk);
+document.getElementById("confirm-cancel-btn").addEventListener("click", confirmCancel);
+document.getElementById("confirm-overlay").addEventListener("click", function(e){ if(e.target===this) confirmCancel(); });
 
 // ── DATOS ────────────────────────────────────────────────────────
 const DIAS_FULL=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
@@ -1127,10 +1141,9 @@ function importarDatos(e){
         Object.keys(backup).forEach(k=>{
           if(k.startsWith("vet_"))localStorage.setItem(k,backup[k]);
         });
-        // Reload everything
         loadData();
         goTo("home");
-      });
+      }, "Restaurar", "#2a9d8f");
     }catch(err){
       alert("El archivo no es válido. Asegurate de importar un backup generado por esta app.");
     }
